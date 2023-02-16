@@ -1,31 +1,28 @@
 drop database if exists restaurantDB;
 create database restaurantDB;
-
-CREATE TABLE EmployeesSchedule(
-    date date, 
-    nurseID integer,
-    startTime time,
-    endTime time,
-    primary key (employeeID, date),
-    foreign key (employeeID) references employee(id) on delete cascade);
-);
+/*need to ad not nulls*/
+/*strong entities */
 
 CREATE TABLE employee(
-    firstName varchar(50),
-    lastName varchar(50),
-    email varchar(255),
-    ID integer, 
-
+    firstName VARCHAR(50),
+    lastName VARCHAR(50),
+    email VARCHAR(255),
+    ID integer not null, 
+    primary key(ID)
     );
 
-CREATE TABLE chef(
-    credentials VARCHAR(50),
-    primary key (employeeID, credentials),
-    foreign key (employeeID) references employee(id) on delete cascade
+CREATE TABLE restaurant(
+    restaurantName VARCHAR(50) not null,
+    URL VARCHAR(255),
+    primary key(restaurantName),
+    city VARCHAR(255),
+    street VARCHAR(255),
+    zip VARCHAR(255),
 );
 
-CREATE TABLE ChefCredentials(
-    credentials VARCHAR(50),
+
+CREATE TABLE chef(
+    credentials VARCHAR(50) not null,
     primary key (employeeID, credentials),
     foreign key (employeeID) references employee(id) on delete cascade
 );
@@ -46,52 +43,103 @@ CREATE TABLE management(
 );
 
 CREATE TABLE foodItem(
-    price decimal,
-    name varchar(50),
+    nameFood VARCHAR(50) not null,
     primary key(name)
 );
 
-CREATE TABLE restaurant(
-    restaurantName varchar(50),
-    url varchar(255),
-    address VARCHAR(255),
-    primary key(restaurantName)
-);
-
-CREATE TABLE customer(
-    firstName varchar(50),
-    lastName varchar(50),
-    email varchar(255),
-    ID integer, 
-    phoneNumber integer,
-    primary key(email)
-
-);
-
-CREATE TABLE eachOrder(
-    ID integer,
-    amount decimal,
+CREATE TABLE Order(
+    ID integer not null,
+    totalPrice decimal,
     tip decimal,
-    deliveryTime time,
-    placementTime time,
     primary key(ID)
 );
 
-CREATE TABLE account(
-    credit decimal,
+CREATE TABLE customerAccount(
+    creditAmount decimal,
     paymentDate date,
-    primary key(customerName, credit),
-    foreign key (customerName) references customer(email) on delete cascade
+    email VARCHAR(255) not null,
+    firstName VARCHAR(50),
+    lastName VARCHAR(50),
+    cellNum integer, 
+    city VARCHAR(255),
+    street VARCHAR(255),
+    zip VARCHAR(255),
+    primary key(email),
 );
 
-CREATE TABLE onlineMenu(
-    
+
+/* weak entitie */
+
+CREATE TABLE payment(
+    paymentDate date not null,
+    paymentAmount decimal not null,
+    primary key(paymentDate, customerEmail)
+    foreign key customerEmail references customerAccount(email) on delete cascade 
+);
+
+CREATE TABLE shift(
+    shiftDay date not null,
+    startTime time,
+    endTime time,
+    primary key (employeeID, shiftDay),
+    foreign key (employeeID) references employee(id) on delete cascade
+);
+
+
+/*relationships */
+/* N to M */
+
+Create TABLE employeeRelatedTo(
+    relationshipType VARCHAR(50) not null,
+    primary key(employeeID, customerEmail),
+    foreign key employeeID references employee(ID),
+    foreign key customerEmail references customerAccount(email) on delete cascade
 
 );
 
-CREATE TABLE orderded(
+Create TABLE orderContains(
+    primary key(orderID, foodName),
+    foreign key orderID references Order(ID),
+    foreign key foodName references foodItem(name) on delete cascade
+);
+
+Create TABLE restaurantOffers(
+    price decimal not null,
+    primary key(foodName, restaurantName)
+    foreign key foodName references foodItem(name)
+    foreign key restaurantName references restaurant(restaurantName) on delete cascade
 
 );
 
-CREATE TABLE 
+/* N to 1 do we delete on cascade*/
+Create TABLE employeeScheduled(
+    primary key(employeeID),
+    foreign key employeeID references employee(ID) on delete cascade
+);
+
+Create TABLE employeeWorks(
+    primary key(restaurantName),
+    foreign key restaurantName references restaurant(restaurantName) on delete cascade
+);
+
+Create TABLE DeliverdBy(
+    timeDelivered time not null,
+    primary key(employeeID),
+    foreign key employeeID references delivery(employeeID) on delete cascade
+);
+
+Create TABLE customerMakesPayment(
+    primary key(customerEmail),
+    foreign key customerEmail references customerAccount(email) on delete cascade
+);
+
+/*1 to 1 */
+CREATE TABLE customerPlaces(
+    timePlace time,
+    primary key(customerEmail)
+    foreign key customerEmail references customerAccount(email) on delete cascade
+
+);
+
+
 
