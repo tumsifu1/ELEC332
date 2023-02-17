@@ -88,9 +88,3 @@ INSERT INTO shift(shiftDay, employeeID, startTime, endTime) VALUES
 ('2022-01-04', 4, '12:00:00', '20:00:00'),
 ('2022-01-05', 5, '14:00:00', '22:00:00');
 
-INSERT INTO employeeRelatedTo(relationshipType, employeeID, customerEmail) VALUES
-('mom', 1, 'customer1@example.com'),
-('dad', 2, 'customer2@example.com'),
-('son', 3, 'customer3@example.com'),
-('sister', 4, 'customer4@example.com'),
-('aunt', 5, 'customer5@example.com');
