@@ -1,88 +1,107 @@
-drop database if exists restaurantDB;
-create database restaurantDB;
-/*need to ad not nulls*/
+DROP DATABASE IF EXISTS restaurantDB;
+CREATE DATABASE restaurantDB;
+USE restaurantDB;
+/*need to ad NOT NULLs*/
 /*strong entities */
 
 CREATE TABLE employee(
     firstName VARCHAR(50),
     lastName VARCHAR(50),
     email VARCHAR(255),
-    ID integer not null, 
-    primary key(ID)
+    ID INTEGER NOT NULL, 
+    PRIMARY KEY(ID)
     );
 
 CREATE TABLE restaurant(
-    restaurantName VARCHAR(50) not null,
+    restaurantName VARCHAR(50) NOT NULL,
     URL VARCHAR(255),
-    primary key(restaurantName),
+    PRIMARY KEY(restaurantName),
     city VARCHAR(255),
     street VARCHAR(255),
-    zip VARCHAR(255),
+    zip VARCHAR(255)
 );
 
 
 CREATE TABLE chef(
-    credentials VARCHAR(50) not null,
-    primary key (employeeID, credentials),
-    foreign key (employeeID) references employee(id) on delete cascade
+    employeeID INTEGER NOT NULL,
+    credentials VARCHAR(50) NOT NULL,
+    PRIMARY KEY (employeeID, credentials),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE delivery(
-    primary key (employeeID),
-    foreign key (employeeID) references employee(id) on delete cascade
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY (employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
 );
 
-CREATE TABLE server(
-    primary key (employeeID),
-    foreign key (employeeID) references employee(id) on delete cascade
+CREATE TABLE service(
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY (employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE management(
-    primary key (employeeID),
-    foreign key (employeeID) references employee(id) on delete cascade
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY (employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE foodItem(
-    nameFood VARCHAR(50) not null,
-    primary key(name)
+    foodName VARCHAR(50) NOT NULL,
+    PRIMARY KEY(foodName)
 );
 
-CREATE TABLE Order(
-    ID integer not null,
-    totalPrice decimal,
-    tip decimal,
-    primary key(ID)
+CREATE TABLE orders(
+    ID INTEGER NOT NULL,
+    totalPrice DECIMAL,
+    tip DECIMAL,
+    PRIMARY KEY(ID)
 );
 
 CREATE TABLE customerAccount(
-    creditAmount decimal,
+    creditAmount DECIMAL,
     paymentDate date,
-    email VARCHAR(255) not null,
+    email VARCHAR(255) NOT NULL,
     firstName VARCHAR(50),
     lastName VARCHAR(50),
-    cellNum integer, 
+    cellNum INTEGER, 
     city VARCHAR(255),
     street VARCHAR(255),
     zip VARCHAR(255),
-    primary key(email),
+    PRIMARY KEY(email)
 );
 
 
-/* weak entitie */
+/* weak entity */
 
 CREATE TABLE payment(
-    paymentDate date not null,
-    paymentAmount decimal not null,
-    primary key(paymentDate, customerEmail)
-    foreign key customerEmail references customerAccount(email) on delete cascade 
+    paymentDate date NOT NULL,
+    paymentAmount DECIMAL NOT NULL,
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(paymentDate, customerEmail),
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email) 
+        ON DELETE CASCADE
 );
 
 CREATE TABLE shift(
-    shiftDay date not null,
-    startTime time,
-    endTime time,
-    primary key (employeeID, shiftDay),
-    foreign key (employeeID) references employee(id) on delete cascade
+    shiftDay date NOT NULL,
+    employeeID INTEGER NOT NULL,
+    startTime TIME,
+    endTime TIME,
+    PRIMARY KEY (employeeID, shiftDay),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id) 
+        ON DELETE CASCADE
 );
 
 
@@ -90,54 +109,87 @@ CREATE TABLE shift(
 /* N to M */
 
 Create TABLE employeeRelatedTo(
-    relationshipType VARCHAR(50) not null,
-    primary key(employeeID, customerEmail),
-    foreign key employeeID references employee(ID),
-    foreign key customerEmail references customerAccount(email) on delete cascade
+    relationshipType VARCHAR(50) NOT NULL,
+    employeeID INTEGER NOT NULL,
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(employeeID, customerEmail),
+    FOREIGN KEY (employeeID)
+        REFERENCES employee(ID)
+        ON DELETE CASCADE,
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email)
+        ON DELETE CASCADE
 
 );
 
 Create TABLE orderContains(
-    primary key(orderID, foodName),
-    foreign key orderID references Order(ID),
-    foreign key foodName references foodItem(name) on delete cascade
-);
+    orderID INTEGER NOT NULL,
+    foodName VARCHAR(50) NOT NULL,
+    PRIMARY KEY (orderID, foodName),
+    FOREIGN KEY (orderID)
+        REFERENCES orders(ID) 
+        ON DELETE CASCADE,
+    FOREIGN KEY (foodName)
+        REFERENCES foodItem(foodName)
+        ON DELETE CASCADE
+        );
+
 
 Create TABLE restaurantOffers(
-    price decimal not null,
-    primary key(foodName, restaurantName)
-    foreign key foodName references foodItem(name)
-    foreign key restaurantName references restaurant(restaurantName) on delete cascade
+    price DECIMAL NOT NULL,
+    foodName VARCHAR(50) NOT NULL,
+    restaurantName  VARCHAR(50) NOT NULL,
+    PRIMARY KEY(foodName, restaurantName),
+    FOREIGN KEY (foodName)
+        REFERENCES foodItem(foodName),
+    FOREIGN KEY (restaurantName) 
+        REFERENCES restaurant(restaurantName) 
+        ON DELETE CASCADE
 
 );
 
 /* N to 1 do we delete on cascade*/
 Create TABLE employeeScheduled(
-    primary key(employeeID),
-    foreign key employeeID references employee(ID) on delete cascade
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY(employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(ID)
+        ON DELETE CASCADE
 );
 
 Create TABLE employeeWorks(
-    primary key(restaurantName),
-    foreign key restaurantName references restaurant(restaurantName) on delete cascade
+    restaurantName  VARCHAR(50) NOT NULL,
+    PRIMARY KEY(restaurantName),
+    FOREIGN KEY (restaurantName)
+        REFERENCES restaurant(restaurantName) 
+        ON DELETE CASCADE
 );
 
 Create TABLE DeliverdBy(
-    timeDelivered time not null,
-    primary key(employeeID),
-    foreign key employeeID references delivery(employeeID) on delete cascade
+    timeDelivered TIME NOT NULL,
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY(employeeID),
+    FOREIGN KEY (employeeID)
+        REFERENCES delivery(employeeID)
+        ON DELETE CASCADE
 );
 
 Create TABLE customerMakesPayment(
-    primary key(customerEmail),
-    foreign key customerEmail references customerAccount(email) on delete cascade
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(customerEmail),
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email)
+        ON DELETE CASCADE
 );
 
 /*1 to 1 */
 CREATE TABLE customerPlaces(
-    timePlace time,
-    primary key(customerEmail)
-    foreign key customerEmail references customerAccount(email) on delete cascade
+    timePlace TIME,
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(customerEmail),
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email)
+        ON DELETE CASCADE
 
 );
 
