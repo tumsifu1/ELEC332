@@ -264,7 +264,7 @@ VALUES
     (3, 32.75, 6.50),
     (4, 18.99, 3.00);
 
-/* Populating the customerAccount table with 3 records */
+/* Populating the customerAccount table with 6 records */
 INSERT INTO customerAccount 
     (creditAmount, paymentDate, email, firstName, lastName, cellNum, city, street, zip)
 VALUES 
