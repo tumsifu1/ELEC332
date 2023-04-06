@@ -1,0 +1,353 @@
+DROP DATABASE IF EXISTS restaurantDB;
+CREATE DATABASE restaurantDB;
+USE restaurantDB;
+/*need to ad NOT NULLs*/
+/*strong entities */
+
+CREATE TABLE employee(
+    firstName VARCHAR(50),
+    lastName VARCHAR(50),
+    email VARCHAR(255),
+    ID INTEGER NOT NULL, 
+    PRIMARY KEY(ID)
+    );
+
+CREATE TABLE restaurant(
+    restaurantName VARCHAR(50) NOT NULL,
+    URL VARCHAR(255),
+    PRIMARY KEY(restaurantName),
+    city VARCHAR(255),
+    street VARCHAR(255),
+    zip VARCHAR(255)
+);
+
+
+CREATE TABLE chef(
+    employeeID INTEGER NOT NULL,
+    credentials VARCHAR(50) NOT NULL,
+    PRIMARY KEY (employeeID, credentials),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE delivery(
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY (employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE service(
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY (employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE management(
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY (employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE foodItem(
+    foodName VARCHAR(50) NOT NULL,
+    PRIMARY KEY(foodName)
+);
+
+CREATE TABLE orders(
+    ID INTEGER NOT NULL,
+    totalPrice DECIMAL(10, 2), 
+    tip DECIMAL(10, 2), 
+    PRIMARY KEY(ID)
+);
+
+CREATE TABLE customerAccount(
+    creditAmount DECIMAL,
+    paymentDate date,
+    email VARCHAR(255) NOT NULL,
+    firstName VARCHAR(50),
+    lastName VARCHAR(50),
+    cellNum INTEGER, 
+    city VARCHAR(255),
+    street VARCHAR(255),
+    zip VARCHAR(255),
+    PRIMARY KEY(email)
+);
+
+
+/* weak entity */
+
+CREATE TABLE payment(
+    paymentDate date NOT NULL,
+    paymentAmount DECIMAL NOT NULL,
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(paymentDate, customerEmail),
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email) 
+        ON DELETE CASCADE
+);
+
+CREATE TABLE shift(
+    shiftDay date NOT NULL,
+    employeeID INTEGER NOT NULL,
+    startTime TIME,
+    endTime TIME,
+    PRIMARY KEY (employeeID, shiftDay),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(id) 
+        ON DELETE CASCADE
+);
+
+
+/*relationships */
+/* N to M */
+
+Create TABLE employeeRelatedTo(
+    relationshipType VARCHAR(50) NOT NULL,
+    employeeID INTEGER NOT NULL,
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(employeeID, customerEmail),
+    FOREIGN KEY (employeeID)
+        REFERENCES employee(ID)
+        ON DELETE CASCADE,
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email)
+        ON DELETE CASCADE
+
+);
+
+Create TABLE orderContains(
+    orderID INTEGER NOT NULL,
+    foodName VARCHAR(50) NOT NULL,
+    PRIMARY KEY (orderID, foodName),
+    FOREIGN KEY (orderID)
+        REFERENCES orders(ID) 
+        ON DELETE CASCADE,
+    FOREIGN KEY (foodName)
+        REFERENCES foodItem(foodName)
+        ON DELETE CASCADE
+        );
+
+
+CREATE TABLE restaurantOffers(
+    price DECIMAL(10, 2) NOT NULL, -- increased precision
+    foodName VARCHAR(50) NOT NULL,
+    restaurantName  VARCHAR(50) NOT NULL,
+    PRIMARY KEY(foodName, restaurantName),
+    FOREIGN KEY (foodName)
+        REFERENCES foodItem(foodName),
+    FOREIGN KEY (restaurantName) 
+        REFERENCES restaurant(restaurantName) 
+        ON DELETE CASCADE
+);
+
+/* N to 1 do we delete on cascade*/
+Create TABLE employeeScheduled(
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY(employeeID),
+    FOREIGN KEY (employeeID) 
+        REFERENCES employee(ID)
+        ON DELETE CASCADE
+);
+
+Create TABLE employeeWorks(
+    restaurantName  VARCHAR(50) NOT NULL,
+    PRIMARY KEY(restaurantName),
+    FOREIGN KEY (restaurantName)
+        REFERENCES restaurant(restaurantName) 
+        ON DELETE CASCADE
+);
+
+Create TABLE DeliverdBy(
+    timeDelivered TIME NOT NULL,
+    employeeID INTEGER NOT NULL,
+    PRIMARY KEY(employeeID),
+    FOREIGN KEY (employeeID)
+        REFERENCES delivery(employeeID)
+        ON DELETE CASCADE
+);
+
+Create TABLE customerMakesPayment(
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(customerEmail),
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email)
+        ON DELETE CASCADE
+);
+
+/*1 to 1 */
+CREATE TABLE customerPlaces(
+    timePlace TIME,
+    customerEmail VARCHAR(255) NOT NULL,
+    PRIMARY KEY(customerEmail),
+    FOREIGN KEY (customerEmail)
+        REFERENCES customerAccount(email)
+        ON DELETE CASCADE
+
+);
+
+
+/*data for the tables (used other software to populate the tables)*/
+
+/* Populating the employee table with 10 records */
+INSERT INTO employee (firstName, lastName, email, ID)
+VALUES
+    ('John', 'Doe', 'johndoe@gmail.com', 1),
+    ('Jane', 'Doe', 'janedoe@gmail.com', 2),
+    ('Bob', 'Smith', 'bobsmith@gmail.com', 3),
+    ('Alice', 'Johnson', 'alicejohnson@gmail.com', 4),
+    ('David', 'Lee', 'davidlee@gmail.com', 5),
+    ('Karen', 'Brown', 'karenbrown@gmail.com', 6),
+    ('Mark', 'Taylor', 'marktaylor@gmail.com', 7),
+    ('Emily', 'Wilson', 'emilywilson@gmail.com', 8),
+    ('Peter', 'Nguyen', 'peternguyen@gmail.com', 9),
+    ('Cindy', 'Chen', 'cindychen@gmail.com', 10);
+
+/* Populating the restaurant table with 3 records */
+INSERT INTO restaurant (restaurantName, URL, city, street, zip)
+VALUES
+    ('Mamma Mia Pizzeria', 'www.mammamiapizzeria.com', 'New York', '123 Main St', '10001'),
+    ('Sushi Time', 'www.sushitime.com', 'Los Angeles', '456 Oak Ave', '90001'),
+    ('Taco Tuesday', 'www.tacotuesday.com', 'Miami', '789 Pine St', '30001');
+
+/* Populating the chef table with 5 records */
+INSERT INTO chef (employeeID, credentials)
+VALUES
+    (1, 'Certified Pizzaiolo'),
+    (2, 'Sushi Master'),
+    (3, 'Executive Chef'),
+    (4, 'Culinary Arts Degree'),
+    (5, 'Asian Cuisine Specialist');
+
+/* Populating the delivery table with 3 records */
+INSERT INTO delivery (employeeID)
+VALUES
+    (6),
+    (7),
+    (8);
+
+/* Populating the service table with 4 records */
+INSERT INTO service (employeeID)
+VALUES
+    (4),
+    (5),
+    (9),
+    (10);
+
+/* Populating the management table with 2 records */
+INSERT INTO management (employeeID)
+VALUES
+    (2),
+    (3);
+
+INSERT INTO foodItem (foodName)
+VALUES
+    ('Margherita Pizza'),
+    ('California Roll'),
+    ('Grilled Salmon'),
+    ('Beef Teriyaki'),
+    ('Taco Salad'),
+    ('Spaghetti Bolognese'),
+    ('Chicken Katsu'),
+    ('Veggie Burger');
+
+
+INSERT INTO orders (ID, totalPrice, tip)
+VALUES
+    (1, 25.99, 5.00),
+    (2, 45.50, 8.00),
+    (3, 32.75, 6.50),
+    (4, 18.99, 3.00),
+    (5, 29.99, 6.00),
+    (6, 15.50, 2.00),
+    (7, 40.25, 8.00),
+    (8, 20.99, 4.00);
+
+/* Populating the customerAccount table with 6 records */
+INSERT INTO customerAccount 
+    (creditAmount, paymentDate, email, firstName, lastName, cellNum, city, street, zip)
+VALUES 
+    (500.00, '2023-02-17', 'johndoe@example.com', 'John', 'Doe', 5551234, 'New York', 'Main St', '10001'),
+    (1000.00, '2023-02-17', 'janedoe@example.com', 'Jane', 'Doe', 5555678, 'San Francisco', 'Market St', '94103'),
+    (750.00, '2023-02-16', 'bobsmith@example.com', 'Bob', 'Smith', 5559876, 'Los Angeles', 'Hollywood Blvd', '90028');
+
+/* sample data for payment table */
+
+INSERT INTO payment(paymentDate, paymentAmount, customerEmail) VALUES 
+('2022-05-01', 20.50, 'johndoe@example.com'),
+('2022-06-01', 25.00, 'janedoe@example.com'),
+('2022-07-01', 15.00, 'johndoe@example.com'),
+('2022-08-01', 30.00, 'janedoe@example.com');
+
+/* sample data for shift table */
+
+INSERT INTO shift(shiftDay, employeeID, startTime, endTime) VALUES
+('2022-05-01', 1, '09:00:00', '17:00:00'),
+('2022-05-02', 2, '12:00:00', '21:00:00'),
+('2022-05-03', 3, '08:00:00', '16:00:00'),
+('2022-05-04', 4, '10:00:00', '18:00:00'),
+('2022-05-05', 5, '11:00:00', '19:00:00'),
+('2022-05-06', 1, '14:00:00', '22:00:00'),
+('2022-05-07', 2, '09:00:00', '17:00:00');
+
+/* employeeRelatedTo */
+INSERT INTO employeeRelatedTo (relationshipType, employeeID, customerEmail)
+VALUES ('mom', 1, 'johndoe@example.com'),
+('dad', 2, 'janedoe@example.com'),
+('sister', 3, 'bobsmith@example.com');
+
+/* orderContains */
+INSERT INTO orderContains (orderID, foodName)
+VALUES (1, 'Margherita Pizza'),
+(1, 'California Roll'),
+(2, 'Grilled Salmon'),
+(3, 'Beef Teriyaki'),
+(3, 'Taco Salad');
+
+INSERT INTO restaurantOffers (price, foodName, restaurantName)
+VALUES
+    (9.99, 'Margherita Pizza', 'Mamma Mia Pizzeria'),
+    (5.99, 'California Roll', 'Sushi Time'),
+    (14.99, 'Grilled Salmon', 'Sushi Time'),
+    (11.99, 'Beef Teriyaki', 'Sushi Time'),
+    (4.99, 'Taco Salad', 'Taco Tuesday'),
+    (7.99, 'Spaghetti Bolognese', 'Mamma Mia Pizzeria'),
+    (8.99, 'Chicken Katsu', 'Sushi Time'),
+    (6.99, 'Veggie Burger', 'Taco Tuesday');
+
+/* employeeScheduled */
+INSERT INTO employeeScheduled (employeeID)
+VALUES (1),
+(2),
+(3),
+(4);
+
+/* employeeWorks */
+INSERT INTO employeeWorks (restaurantName)
+VALUES ('Mamma Mia Pizzeria'),
+('Sushi Time'),
+('Taco Tuesday');
+
+/* DeliverdBy */
+INSERT INTO DeliverdBy (timeDelivered, employeeID)
+VALUES ('15:30:00', 6),
+('17:45:00', 7),
+('19:15:00', 8);
+
+/* customerMakesPayment */
+INSERT INTO customerMakesPayment (customerEmail)
+VALUES ('johndoe@example.com'),
+('janedoe@example.com'),
+('bobsmith@example.com');
+
+/* customerPlacesOrder */
+INSERT INTO customerPlaces (timePlace, customerEmail)
+VALUES ('12:00:00', 'johndoe@example.com'),
+('13:30:00', 'janedoe@example.com'),
+('18:45:00', 'bobsmith@example.com');
