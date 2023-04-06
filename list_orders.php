@@ -42,9 +42,9 @@
         $sql = "SELECT o.ID, o.totalPrice, o.tip, c.email, c.firstName, c.lastName
         FROM orders o
         JOIN customerPlaces cp ON o.ID = cp.customerEmail
-        JOIN customers c ON cp.customerEmail = c.email
+        JOIN customeraccount c ON cp.customerEmail = c.email
         WHERE cp.timePlace = :date";
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute(['date' => $date]);
 
