@@ -39,11 +39,16 @@
         }
 
         // Fetch and display the relevant order information
-        $sql = "SELECT o.ID, o.totalPrice, o.tip, c.email, c.firstName, c.lastName
+        $sql = "SELECT DISTINCT o.ID, o.totalPrice, o.tip, c.firstName as customerFirstName, c.lastName as customerLastName, GROUP_CONCAT(f.foodName SEPARATOR ', ') as items, CONCAT(d.firstName, ' ', d.lastName) as deliveryPerson
         FROM orders o
-        JOIN customerPlaces cp ON o.ID = cp.customerEmail
-        JOIN customeraccount c ON cp.customerEmail = c.email
-        WHERE cp.timePlace = :date";
+        JOIN customerPlaces cp ON o.ID = cp.orderID
+        JOIN customerAccount c ON cp.customerEmail = c.email
+        JOIN orderContains oc ON o.ID = oc.orderID
+        JOIN foodItem f ON oc.foodName = f.foodName
+        JOIN DeliveredBy db ON o.ID = db.orderID
+        JOIN employee d ON db.employeeID = d.ID
+        WHERE cp.datePlace = :date
+        GROUP BY o.ID";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute(['date' => $date]);
@@ -52,25 +57,24 @@
 
         if (count($orders) > 0) {
             echo "<table>";
-            echo "<tr><th>Order ID</th><th>Total Price</th><th>Tip</th><th>Customer Email</th><th>First Name</th><th>Last Name</th></tr>";
+            echo "<tr><th>Order ID</th><th>Customer Name</th><th>Items Ordered</th><th>Total Price</th><th>Tip</th><th>Delivery Person</th></tr>";
             foreach ($orders as $order) {
                 echo "<tr>";
                 echo "<td>" . $order['ID'] . "</td>";
+                echo "<td>" . $order['customerFirstName'] . " " . $order['customerLastName'] . "</td>";
+                echo "<td>" . $order['items'] . "</td>";
                 echo "<td>" . $order['totalPrice'] . "</td>";
                 echo "<td>" . $order['tip'] . "</td>";
-                echo "<td>" . $order['email'] . "</td>";
-                echo "<td>" . $order['firstName'] . "</td>";
-                echo "<td>" . $order['lastName'] . "</td>";
+                echo "<td>" . $order['deliveryPerson'] . "</td>";
                 echo "</tr>";
             }
-            echo "</table>";
-        } else {
-            echo "<p>No orders found for the specified date.</p>";
-        }
+                echo "</table>";
+                } else {
+                echo "<p>No orders found for the selected date.</p>";
+                    }
     }
-    ?>
-
-    <a href="restaurant.php" class="btn">Back to Home</a>
-  </div>
+                ?>
+                
+    </div>
 </body>
 </html>
